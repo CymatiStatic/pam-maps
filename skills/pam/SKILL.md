@@ -1,11 +1,11 @@
 ---
 name: pam
-description: "Project Architectural Maps. Maintains a multi-layer map of the CymaticAPPS monorepo (Master + Slave maps, ASS/PASS significance files, ReadMyAss human guides) and evaluates whether third-party GitHub repos add value, are redundant, or could conflict. Trigger via /pam or /cymatic-map. Auto-trigger phrases: 'ask PAM', 'PAM, ...', 'update the map', 'is this repo useful'."
+description: "Project Architectural Maps. Maintains a multi-layer map of a monorepo or multi-repo system (Master + Slave maps, ASS/PASS significance files, ReadMyAss human guides) and evaluates whether third-party repos add value, are redundant, or could conflict. Trigger via /pam. Auto-trigger phrases: 'ask PAM', 'PAM, ...', 'update the map', 'is this repo useful'."
 ---
 
 # PAM — Project Architectural Maps Skill
 
-> **Read `~/.pi/agent/agents/PAM.md` first.** That is PAM's canonical identity,
+> **Read `agents/PAM.md` first.** That is PAM's canonical identity,
 > vocabulary (ASS / PASS / ReadMyAss / Master / Slave), file hierarchy, and
 > rules. This SKILL.md is the *workflow* — what to do when invoked. PAM.md
 > is the *who PAM is*.
@@ -21,19 +21,17 @@ description: "Project Architectural Maps. Maintains a multi-layer map of the Cym
 | `/pam sync --master-only` | Refresh just the 3 monorepo-level files. |
 | `/pam sync --new-only` | Fill in any project that doesn't yet have a MAPS folder. |
 | `/pam sync <project>` | Refresh just one project's 4 files (e.g. `/pam sync pi-pager`). **Auto-chains to `/pam sync --master-only` on success — see Rule 8 in `~/.pi/agent/agents/PAM.md`.** |
-| `/pam evaluate <github-url>` | Render a verdict on whether a third-party repo adds value to CymaticAPPS. |
-
-The alias `/cymatic-map` accepts the same subcommands.
+| `/pam evaluate <github-url>` | Render a verdict on whether a third-party repo adds value to your system. |
 
 ---
 
 ## Workflow: `/pam status`
 
-1. Run `node ~/.pi/agent/skills/PAM/scripts/scan-readmes.mjs` (JSON output).
-2. Read the cache at `CymaticAPPS/.pi/MAPS/.pam-cache.json` if it exists.
+1. Run `pam-scan` (or `node scripts/scan-readmes.mjs`) — JSON output.
+2. Read the cache at `<monorepo>/.pi/MAPS/.pam-cache.json` if it exists.
 3. Read the pending-log counts:
    ```bash
-   node ~/.pi/agent/skills/PAM/scripts/log-pending.mjs --counts
+   pam-log --counts
    ```
 4. Render a status table:
    - Last sync time (from cache, or "never")
@@ -50,14 +48,14 @@ The alias `/cymatic-map` accepts the same subcommands.
 Run the scanner. Capture the JSON.
 
 ```bash
-node ~/.pi/agent/skills/PAM/scripts/scan-readmes.mjs > /tmp/pam-scan.json
+pam-scan > /tmp/pam-scan.json
 ```
 
 (Use ctx-mode `ctx_execute_file` if the JSON is large.)
 
 ### Step 2 — Load cache & determine what to regenerate
 
-Cache lives at `CymaticAPPS/.pi/MAPS/.pam-cache.json` with shape:
+Cache lives at `<monorepo>/.pi/MAPS/.pam-cache.json` with shape:
 ```json
 {
   "lastSyncedAt": "ISO8601",
@@ -81,34 +79,34 @@ A project needs re-synthesis if:
 
 Generate (or update) all three:
 
-#### `CymaticAPPS/.pi/MAPS/PAM_Master.md`
+#### `<monorepo>/.pi/MAPS/PAM_Master.md`
 - A visual file tree of the monorepo, rendered as a fenced ```` ```text ```` block.
 - ⭐ marks projects that are ASS-significant (affect the global system).
 - 🟡 marks projects that are PASS-significant only (internally important but no global ripple).
 - ⚪ marks projects with neither (e.g. archived, scratch, or no README).
 - Top of file: legend, last-scanned timestamp, project counts.
-- Use the template at `~/.pi/agent/skills/PAM/templates/PAM_Master.template.md`.
+- Use the template at `templates/PAM_Master.template.md`.
 
-#### `CymaticAPPS/.pi/MAPS/ReadMyAss.md`
+#### `<monorepo>/.pi/MAPS/ReadMyAss.md`
 - Human-readable. Open with the *You Are Here* breadcrumb showing this is the **Master** position in the hierarchy.
 - Include a **Mermaid diagram** of system relationships (`graph LR` style — projects as nodes, edges = "depends on", "produces input for", "consumes output of").
 - Plain-English explanation of how systems tie together.
 - Bottom: navigation table linking to each project's `<Project>/.pi/MAPS/ReadMyAss.md`.
-- Template: `~/.pi/agent/skills/PAM/templates/ReadMyAss_Master.template.md`.
+- Template: `templates/ReadMyAss_Master.template.md`.
 
-#### `CymaticAPPS/.pi/MAPS/ASS_MASTER.md`
+#### `<monorepo>/.pi/MAPS/ASS_MASTER.md`
 - **The most important file.** This is what PAM consults when evaluating third-party repos and when reasoning about ripple effects.
 - For each project: 1-paragraph "what it contributes globally", explicit "depends on" / "depended on by" lists, "what breaks if this disappears" answer.
-- Group by role: Orchestration & Agents · Audio/Transcription · UI/Frontend · Glue/Bridges · Tools/Utilities · Archived/Scratch.
+- Group by functional role (e.g. Core Services · Frontend · Tools · Archived).
 - Bottom: include the Master Map as a quick reference.
-- Template: `~/.pi/agent/skills/PAM/templates/ASS_MASTER.template.md`.
+- Template: `templates/ASS_MASTER.template.md`.
 
 ### Step 3.5 — Drain pending logs
 
 For each project being re-synthesized (or for ALL projects if doing a full sync), drain the pending log:
 
 ```bash
-node ~/.pi/agent/skills/PAM/scripts/log-pending.mjs --drain --project <name>
+pam-log --drain --project <name>
 ```
 
 This returns the JSONL entries and moves the file aside as a timestamped
@@ -133,7 +131,7 @@ For each project that needs (re)generation, write to `<Project>/.pi/MAPS/`:
 | `ASS_SLAVE.md` | ONLY the systems in this repo that affect the GLOBAL system structure — hand-off points, shared contracts, ports, daemons, env vars others depend on. |
 | `PASS.md` | Project-internal architectural significance — what matters inside this project regardless of global impact (hot paths, fragile glue, critical configs). |
 
-Templates: `PAM_Slave.template.md`, `ReadMyAss_Slave.template.md`, `ASS_SLAVE.template.md`, `PASS.template.md`.
+Templates: `templates/PAM_Slave.template.md`, `templates/ReadMyAss_Slave.template.md`, `templates/ASS_SLAVE.template.md`, `templates/PASS.template.md`.
 
 **Rule of thumb for in-use vs not-in-use:**
 - ⭐ ASS-marked: `package.json`, `pyproject.toml`, `Dockerfile`, the actual entry point, scripts referenced from package.json/scripts, source folders the entry point imports.
@@ -146,7 +144,7 @@ After all writes succeed, rewrite `.pam-cache.json` with current timestamps.
 
 ### Step 6 — Report
 
-Tell Ben:
+Report:
 - How many projects were synthesized vs cached
 - Which files were created/updated
 - Any projects that lacked a README (need attention)
@@ -182,14 +180,14 @@ as a primary failure. Never silently swallow.
 ### Step 1 — Fetch the repo's README & metadata
 
 ```bash
-node ~/.pi/agent/skills/PAM/scripts/fetch-repo-readme.mjs <url>
+pam-fetch <url>
 ```
 
 Use ctx-mode for the JSON if it's large.
 
 ### Step 2 — Read ASS_MASTER.md
 
-If `CymaticAPPS/.pi/MAPS/ASS_MASTER.md` doesn't exist yet, run `/pam sync --master-only` first (or tell Ben to). PAM cannot render a verdict without knowing the existing system landscape.
+If `<monorepo>/.pi/MAPS/ASS_MASTER.md` doesn't exist yet, run `/pam sync --master-only` first. PAM cannot render a verdict without knowing the existing system landscape.
 
 ### Step 3 — Render a verdict
 
@@ -198,25 +196,24 @@ Pick exactly one of the 5 verdicts (use the most accurate, in priority order):
 | Verdict | When to choose |
 |---------|----------------|
 | ✅ **ADDS VALUE** | Clear gap-fill. You can name (a) which existing project(s) it would slot into, (b) one or more concrete integration points, (c) a recommended next step. |
-| 🟡 **MAYBE** | Partial overlap, OR the value depends on a direction one of his projects hasn't committed to. Name the conditional explicitly. |
-| 🔴 **REDUNDANT** | He already has `<project>` doing this. Name the existing project and the overlap. If the new repo is *better* than the existing one, say so and recommend evaluating a swap. |
-| ⚠️ **COULD CONFLICT** | Port collision (check his .env / docker-compose), global hooks (Pi config, MCP servers), overlapping daemons, license incompatibility (he uses MIT/Apache mostly), or anything that would step on something already running. Name the specific conflict. |
+| 🟡 **MAYBE** | Partial overlap, OR the value depends on a direction one of the existing projects hasn't committed to. Name the conditional explicitly. |
+| 🔴 **REDUNDANT** | The system already has `<project>` doing this. Name the existing project and the overlap. If the new repo is *better* than the existing one, say so and recommend evaluating a swap. |
+| ⚠️ **COULD CONFLICT** | Port collision (check .env / docker-compose), global hooks, overlapping daemons, license incompatibility, or anything that would step on something already running. Name the specific conflict. |
 | ⛔ **NOT USEFUL** | Doesn't fit the current stack at all. Name why (wrong domain, wrong runtime, abandoned > 2 years, fork of fork, etc.). |
 
 ### Step 4 — Escalate to clone if needed
 
-If the README is thin, ambiguous, or the metadata raises questions you can't answer (e.g. "the README is 10 lines but it claims to be a full WebSocket server"), ask Ben:
+If the README is thin, ambiguous, or the metadata raises questions you can't answer (e.g. "the README is 10 lines but it claims to be a full WebSocket server"), ask the user:
 
 > "The README isn't enough to render a verdict with confidence (currently 60%). Should I clone for deeper inspection?"
 
-If yes:
+If yes, clone into a separate directory (not the monorepo root):
 ```bash
-cd "C:/Users/Ben/Dev/3rd-Party_in-use" && git clone <url>
+git clone <url> /tmp/pam-eval/<repo>
 ```
-**Never clone into CymaticAPPS.** This is a global Pi rule.
 
 After inspection, ask:
-> "Verdict rendered. Keep the clone at `3rd-Party_in-use/<repo>` for further inspection, or delete it?"
+> "Verdict rendered. Keep the clone for further inspection, or delete it?"
 
 ### Step 5 — Output the verdict report
 
@@ -230,7 +227,7 @@ After inspection, ask:
 <2–4 sentences explaining the verdict>
 
 ### Touched systems
-- `<CymaticAPPS-project>` — <how this repo would interact with it>
+- `<existing-project>` — <how this repo would interact with it>
 - ...
 
 ### Concrete integration points (if ADDS VALUE / MAYBE)
@@ -263,14 +260,13 @@ PAM should engage even without an explicit `/pam` if the user says:
 - "Update the map" / "Refresh the maps"
 - "Is this repo useful?" + a GitHub URL → run `/pam evaluate <url>`
 - "Should I add this?" + a GitHub URL → run `/pam evaluate <url>`
-- "Where does X fit in CymaticAPPS?" → consult `ASS_MASTER.md` and answer
+- "Where does X fit?" → consult `ASS_MASTER.md` and answer
 
 ---
 
 ## Output discipline
 
-- Per global rules: do NOT print diffs after edits, do NOT show full file contents in chat after writing — summarize the change in prose.
-- For sync runs: report counts (X projects scanned, Y synthesized, Z cached) + a table of changed files. Don't paste any of the generated markdown into chat unless Ben asks.
+- For sync runs: report counts (X projects scanned, Y synthesized, Z cached) + a table of changed files.
 - For evaluate runs: print the verdict report above as the final message.
 
 ---
@@ -278,8 +274,8 @@ PAM should engage even without an explicit `/pam` if the user says:
 ## Failure modes & recovery
 
 - **Scanner returns 0 projects**: root path wrong, or filesystem issue. Stop and ask.
-- **GitHub fetch returns 404**: repo doesn't exist or is private. Tell Ben, ask if he wants to provide a local clone path instead.
-- **GitHub rate limit hit**: tell Ben to set `GITHUB_TOKEN` env var, then retry.
+- **GitHub fetch returns 404**: repo doesn't exist or is private. Ask if the user wants to provide a local clone path instead.
+- **GitHub rate limit hit**: set `GITHUB_TOKEN` env var, then retry.
 - **A project has no README**: Slave files are still generated, but flagged with a banner: "⚠️ This project has no README. Significance is inferred from directory structure only — please add a README and re-sync."
 - **A MAPS file has been hand-edited since last sync**: detect via a `<!-- pam:hand-edited -->` marker users can add, OR via mtime > cache. If detected, ask before overwriting.
 
@@ -287,7 +283,7 @@ PAM should engage even without an explicit `/pam` if the user says:
 
 ## Related
 
-- Identity & vocabulary: `~/.pi/agent/agents/PAM.md`
-- Slash entry points: `~/.pi/agent/prompts/pam.md`, `~/.pi/agent/prompts/cymatic-map.md`
-- Templates: `~/.pi/agent/skills/PAM/templates/`
-- Scripts: `~/.pi/agent/skills/PAM/scripts/`
+- Identity & vocabulary: `agents/PAM.md`
+- Slash command entry: `prompts/pam.md`
+- Templates: `templates/`
+- Scripts: `scripts/`

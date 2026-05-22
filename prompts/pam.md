@@ -1,12 +1,12 @@
 ---
-description: "PAM — Project Architectural Maps. Maintain the CymaticAPPS map hierarchy (Master/Slave) and evaluate third-party GitHub repos."
+description: "PAM — Project Architectural Maps. Maintain the monorepo map hierarchy (Master/Slave) and evaluate third-party repos."
 ---
 
 # /pam
 
-Load and follow the PAM skill at `~/.pi/agent/skills/pam/SKILL.md`.
+Load and follow the PAM skill at `skills/pam/SKILL.md`.
 
-Read PAM's canonical identity first: `~/.pi/agent/agents/PAM.md`.
+Read PAM's canonical identity first: `agents/PAM.md`.
 
 ## Arguments
 
@@ -21,4 +21,4 @@ Parse it as a subcommand:
 - `sync <project>` → refresh just that one project's 4 files.
 - `evaluate <github-url>` → run the **evaluate** workflow against the URL.
 
-If `{{ARGS}}` doesn't match any of the above, print the subcommand list and ask what Ben wants.
+If `{{ARGS}}` doesn't match any of the above, print the subcommand list and ask the user.

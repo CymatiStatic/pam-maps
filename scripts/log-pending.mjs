@@ -31,7 +31,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const CYMATIC_ROOT = "C:/Users/Ben/Dev/CymaticAPPS";
+// Default root: override with PAM_ROOT env var or pass --root <path>
+const CYMATIC_ROOT = process.env.PAM_ROOT || process.cwd();
 const VALID_TYPES = new Set([
   "new-project",
   "rename-project",
@@ -147,7 +148,7 @@ function listCounts() {
       // Skip dotfiles (except .pi if it ever holds a project, which it shouldn't)
       if (e.name.startsWith(".")) return false;
       // Skip archive markers like _+ALL PREVIOUS+_, _archive, _venv — single _ prefix
-      // BUT keep __ prefix (Ben's meta-convention, e.g., __Orchestration Related__)
+      // Skip underscore-prefixed dirs (archive markers) but keep double-underscore
       if (e.name.startsWith("_") && !e.name.startsWith("__")) return false;
       return true;
     })

@@ -48,6 +48,6 @@ The following things are BOTH project-internal AND globally significant:
 
 {{PASS_ONLY}}
 
-## Notes for future-Ben
+## Notes for the maintainer
 
 {{FUTURE_NOTES}}

@@ -5,7 +5,7 @@
 > **Architectural System Significance — Global perspective.**
 >
 > This file lists ONLY the things in `{{PROJECT_NAME}}` that affect the
-> global CymaticAPPS system. Internal architecture, even if important
+> global {{MONOREPO_NAME}} system. Internal architecture, even if important
 > within the project, does not belong here — that lives in
 > [`PASS.md`](./PASS.md).
 

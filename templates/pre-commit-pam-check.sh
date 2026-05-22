@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # pre-commit-pam-check.sh
 #
-# Opt-in git pre-commit hook for any CymaticAPPS project. Detects when a
+# Opt-in git pre-commit hook for any {{MONOREPO_NAME}} project. Detects when a
 # staged change is likely PAM-significant (touches contracts, configs,
 # entry points, or files mentioned in this project's ASS_SLAVE.md) and
 # prompts the user to log a pending entry before the commit lands.
@@ -29,9 +29,9 @@ set -u
 # Only run inside a git repo
 git_root="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 
-# Only run inside CymaticAPPS
+# Only run inside {{MONOREPO_NAME}}
 case "$git_root" in
-  *CymaticAPPS*) ;;
+  *{{MONOREPO_NAME}}*) ;;
   *) exit 0 ;;
 esac
 
@@ -107,7 +107,7 @@ echo "    log a pending entry so PAM can fold this into the maps on the"
 echo "    next /pam sync."
 echo ""
 echo "    Suggested:"
-echo "      node C:/Users/Ben/.pi/agent/skills/PAM/scripts/log-pending.mjs \\"
+echo "      node pam-log \\"
 echo "        --project $project_name \\"
 echo "        --type contract-change \\"
 echo "        --summary \"<one-line summary of this commit>\""

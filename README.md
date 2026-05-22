@@ -1,149 +1,191 @@
-# 🗺️ pi-pam — Project Architectural Maps
+# 🗺️ PAM — Project Architectural Maps
 
-> Living, multi-layer cartography for monorepos. A [Pi](https://pi.dev) skill that maintains visual maps, significance ratings, dependency graphs, and third-party repo evaluation — so every agent and every developer knows what each system does and how they connect.
+> Living, multi-layer cartography for monorepos and multi-repo systems. PAM analyzes your repos and their subdirectories, identifies architecturally significant imports and connections, and maintains a map that stays current as your system evolves.
 
 ## The Problem
 
 Large codebases rot silently. README files go stale. New contributors can't find the entry point. AI agents hallucinate project relationships because nothing documents the actual architecture. One project gets renamed and three downstream systems break because nobody mapped the dependency.
 
-**PAM fixes this.** It walks your monorepo, reads every README, and synthesizes a multi-layer map that stays current across sessions and agents.
+## What PAM Does
 
-## ✨ Features
+PAM scans your monorepo (or system of repos), reads every README and project structure, and synthesizes a **multi-layer map** of your entire system:
 
-- **Multi-layer maps** — Quick visual map (PAM_Master) → human-readable narrative (ReadMyAss) → deep architectural significance breakdown (ASS_MASTER)
-- **Per-project slave files** — Each project gets its own significance rating, dependency list, and narrative
-- **Third-party repo evaluation** — `/pam evaluate <github-url>` gives a verdict: ✅ ADDS VALUE · 🟡 MAYBE · 🔴 REDUNDANT · ⚠️ COULD CONFLICT · ⛔ NOT USEFUL
-- **Pending log system** — Agents report PAM-significant changes to a lightweight JSONL log; PAM drains and folds them on next sync
-- **Significance ratings** — 🔴 ASS (Architecturally System-Significant) vs 🟡 PASS (Project-Architecturally Semi-Significant) for every project
-- **Deterministic scripts** — Node.js walkers and fetchers that produce structured JSON for the AI to synthesize
-- **Pre-commit hook** — Warns when changes touch PAM-significant contracts
-- **Template-driven** — All output files generated from Markdown templates
+- **What each project does** and how it contributes to the whole
+- **How projects connect** — dependencies, shared contracts, ports, file paths
+- **What breaks if something disappears** — ripple analysis for every system
+- **Significance ratings** — which projects are load-bearing (🔴 ASS) vs self-contained (🟡 PASS)
+
+### Third-Party Repo Evaluation
+
+Drop in a link to any public repo, npm package, tool, or application, and ask PAM:
+
+> *"Would this benefit my system?"*
+
+PAM reads the repo's README and metadata, compares it against its knowledge of your existing architecture, and responds with a structured verdict:
+
+| Verdict | Meaning |
+|---------|---------|
+| ✅ **ADDS VALUE** | Fills a gap, no overlap with existing systems |
+| 🟡 **MAYBE** | Some value, but overlap or integration cost to consider |
+| 🔴 **REDUNDANT** | You already have something that does this |
+| ⚠️ **COULD CONFLICT** | Risk of breaking existing contracts or conventions |
+| ⛔ **NOT USEFUL** | Doesn't fit your architecture |
+
+The verdict includes *why* — which existing projects overlap, what the integration points would be, and what would need to change.
 
 ## 📦 Installation
 
 ```bash
-pi install CymatiStatic/pi-pam
+npm install -g pam-maps
 ```
 
-Or add to `~/.pi/agent/settings.json`:
+Or clone and use directly:
 
-```json
-{
-  "packages": ["github:CymatiStatic/pi-pam"]
-}
-```
-
-Then copy the agent identity doc into your Pi config:
 ```bash
-cp node_modules/pi-pam/agents/PAM.md ~/.pi/agent/agents/PAM.md
+git clone https://github.com/CymatiStatic/pam-maps.git
+cd pam-maps
 ```
+
+### Use with AI Coding Agents
+
+PAM works with **any CLI-based AI agent** — Pi, Claude Code, Codex, Cursor, Aider, or anything else. Copy the skill and agent docs into your agent's config:
+
+```bash
+# Example: Pi
+cp -r skills/ ~/.pi/agent/skills/
+cp agents/PAM.md ~/.pi/agent/agents/
+
+# Example: Claude Code
+cp -r skills/ ~/.claude/skills/
+
+# Example: Codex
+cp -r skills/ ~/.codex/skills/
+```
+
+Then use `/pam status`, `/pam sync`, or `/pam evaluate <url>` from inside any session.
 
 ## 🚀 Usage
 
-### Commands
+### CLI Scripts (standalone, no agent required)
+
+```bash
+# Scan your monorepo and emit structured JSON
+pam-scan /path/to/your/monorepo
+
+# Or with environment variable
+PAM_ROOT=/path/to/monorepo pam-scan
+
+# Fetch a GitHub repo's README + metadata (no clone needed)
+pam-fetch https://github.com/expressjs/express
+
+# Log a significant change for the next sync
+pam-log --project my-api --type contract-change \
+        --summary "Changed default port from 3000 to 8080" \
+        --ripple "frontend, reverse-proxy"
+
+# List pending changes across all projects
+pam-log --counts
+
+# Read pending changes for a project
+pam-log --read --project my-api
+
+# Drain (read + archive) pending changes
+pam-log --drain --project my-api
+```
+
+### Agent Commands (inside any AI coding session)
 
 | Command | What it does |
 |---------|-------------|
-| `/pam status` | Read-only: which projects have maps, what's stale, pending changes |
+| `/pam status` | Which projects have maps, what's stale, pending changes |
 | `/pam sync` | Refresh master + slave map files (only re-syncs what changed) |
 | `/pam sync --master-only` | Just the 3 monorepo-level files |
 | `/pam sync --new-only` | Fill in projects without maps |
 | `/pam sync <project>` | Refresh just one project |
 | `/pam evaluate <github-url>` | Verdict on whether a third-party repo adds value |
 
-### Example: Evaluate a repo
+## 🔍 How It Works
+
+### Map Hierarchy
+
+PAM generates two layers of documentation:
 
 ```
-/pam evaluate https://github.com/anthropics/claude-code
+<monorepo>/.pi/MAPS/                    ← Master layer (whole system)
+├── PAM_Master.md       Quick visual map of the entire tree
+├── ReadMyAss.md        Human-readable narrative with Mermaid diagrams
+└── ASS_MASTER.md       Deep architectural significance breakdown
 
-╔══════════════════════════════════════════════╗
-║  VERDICT: 🟡 MAYBE                          ║
-║  anthropics/claude-code                      ║
-╠══════════════════════════════════════════════╣
-║  Overlap: 35% with existing Pi tooling       ║
-║  Unique value: Official Anthropic patterns   ║
-║  Risk: Could conflict with custom extensions ║
-║  Recommendation: Clone for reference only    ║
-╚══════════════════════════════════════════════╝
+<project>/.pi/MAPS/                     ← Slave layer (per-project)
+├── PAM_Slave.md        This project's visual map
+├── ASS_SLAVE.md        Significance rating + dependency list
+├── PASS.md             Classification rationale
+└── ReadMyAss.md        This project's narrative
 ```
 
-## 🔍 How it works
-
-### Map hierarchy
-
-```
-<monorepo>/.pi/MAPS/
-├── PAM_Master.md       ← Visual map of the whole tree (quick reference)
-├── ReadMyAss.md        ← Human-readable narrative with Mermaid diagrams
-└── ASS_MASTER.md       ← Deep architectural significance breakdown
-
-<project>/.pi/MAPS/
-├── PAM_Slave.md        ← This project's visual map
-├── ASS_SLAVE.md        ← This project's significance + dependencies
-├── PASS.md             ← Significance classification rationale
-└── ReadMyAss.md        ← This project's narrative
-```
-
-### Significance ratings
+### Significance Ratings
 
 | Rating | Meaning | Example |
 |--------|---------|---------|
-| 🔴 **ASS** | Architecturally System-Significant — removal breaks other systems | API gateway, shared auth |
-| 🟡 **PASS** | Project-Architecturally Semi-Significant — self-contained, limited ripple | Internal tool, utility script |
+| 🔴 **ASS** | Architecturally System-Significant — removal breaks other systems | Shared API gateway, auth service, message bus |
+| 🟡 **PASS** | Project-Architecturally Semi-Significant — self-contained, limited ripple | Internal CLI tool, standalone utility |
+
+### Pending Log Protocol
+
+Any developer or AI agent can report significant changes without triggering a full resync:
+
+```bash
+pam-log --project my-api --type contract-change \
+        --summary "REST endpoint /v2/users replaced /v1/users" \
+        --files "src/routes.ts,openapi.yaml" \
+        --ripple "frontend, mobile-app, docs"
+```
+
+PAM drains the log on the next `/pam sync` and folds changes into the maps.
+
+Change types: `new-project` · `rename-project` · `delete-project` · `contract-change` · `new-dependency` · `dependency-removed` · `role-change` · `other`
 
 ### Scripts
 
 | Script | Purpose |
 |--------|---------|
-| `scan-readmes.mjs` | Walk the monorepo, find every README, emit structured JSON |
-| `fetch-repo-readme.mjs` | Fetch a GitHub repo's README + metadata via API (no clone) |
+| `scan-readmes.mjs` | Walk a monorepo root, find every README, emit structured JSON |
+| `fetch-repo-readme.mjs` | Fetch a GitHub repo's README + metadata via API (no clone needed) |
 | `log-pending.mjs` | Append/read/drain the per-project pending change log |
 
-### Pending log protocol
-
-Any agent working in the monorepo can report PAM-significant changes:
-
-```bash
-node scripts/log-pending.mjs \
-  --project my-api \
-  --type contract-change \
-  --summary "Changed default port from 3000 to 8080" \
-  --ripple "frontend, reverse-proxy"
-```
-
-PAM drains the log on the next `/pam sync` and folds changes into the maps.
-
-## 📁 Repo structure
+## 📁 Repo Structure
 
 ```
-pi-pam/
-├── agents/PAM.md              ← PAM's identity and vocabulary
-├── skills/pam/SKILL.md        ← /pam workflow (what to do when invoked)
+pam-maps/
+├── agents/PAM.md              ← PAM's identity and vocabulary (for AI agents)
+├── skills/pam/SKILL.md        ← Workflow definition (for AI agent sessions)
 ├── scripts/
-│   ├── scan-readmes.mjs       ← Monorepo walker
-│   ├── fetch-repo-readme.mjs  ← GitHub repo fetcher
-│   └── log-pending.mjs        ← Pending change logger
-├── templates/                 ← Output file templates
-├── prompts/pam.md             ← Slash command entry point
+│   ├── scan-readmes.mjs       ← Monorepo walker (standalone CLI)
+│   ├── fetch-repo-readme.mjs  ← GitHub repo fetcher (standalone CLI)
+│   └── log-pending.mjs        ← Pending change logger (standalone CLI)
+├── templates/                 ← Output file templates (Markdown)
+├── prompts/pam.md             ← Slash command entry point (optional)
 └── package.json
 ```
 
 ## ⚙️ Configuration
 
-The `scan-readmes.mjs` script defaults to scanning the current working directory. Override with:
+Set `PAM_ROOT` environment variable to your monorepo root, or pass it as a CLI argument:
 
 ```bash
-node scripts/scan-readmes.mjs /path/to/your/monorepo
+export PAM_ROOT=/path/to/your/monorepo
+pam-scan                    # uses PAM_ROOT
+pam-scan /other/path        # overrides PAM_ROOT
 ```
 
-PAM works with any monorepo structure — it reads READMEs to understand project roles, not framework-specific config files.
+PAM works with any monorepo structure — it reads READMEs to understand project roles, not framework-specific config files. No Nx, Turborepo, or Lerna required.
 
 ## 🤝 Contributing
 
 PRs welcome! Areas that could use help:
 - Additional output templates for different monorepo styles
 - Language-specific significance heuristics
-- Integration with other monorepo tools (Nx, Turborepo, etc.)
+- Integration guides for more AI agents
 
 ## 📄 License
 

@@ -2,25 +2,25 @@
 /**
  * scan-readmes.mjs
  *
- * Deterministic walker for the PAM skill. Walks CymaticAPPS, finds every
+ * Deterministic walker for the PAM skill. Walks a monorepo root, finds every
  * README.md (skipping noise dirs), and emits structured JSON describing each
- * one. Claude consumes this output to synthesize the PAM_Master / ASS_MASTER /
+ * one. The AI agent consumes this output to synthesize the PAM_Master / ASS_MASTER /
  * PAM_Slave / ASS_SLAVE / PASS / ReadMyAss files.
  *
  * Usage:
- *   node scan-readmes.mjs              # default root: C:/Users/Ben/Dev/CymaticAPPS
+ *   node scan-readmes.mjs              # default root: current working directory
  *   node scan-readmes.mjs <root>       # custom root
  *   node scan-readmes.mjs --json       # emit JSON (default)
  *   node scan-readmes.mjs --tree       # emit human-readable tree only
  *
  * Output JSON shape:
  *   {
- *     root: "C:/Users/Ben/Dev/CymaticAPPS",
+ *     root: "/path/to/your/monorepo",
  *     scannedAt: "2026-05-07T...",
  *     projects: [
  *       {
  *         name: "pi-pager",
- *         path: "C:/Users/Ben/Dev/CymaticAPPS/pi-pager",
+ *         path: "/path/to/your/monorepo/my-project",
  *         relPath: "pi-pager",
  *         level: 1,                          // 1 = top-level project
  *         readme: {
@@ -49,7 +49,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const DEFAULT_ROOT = "C:/Users/Ben/Dev/CymaticAPPS";
+// Default root: override with PAM_ROOT env var, CLI arg, or falls back to cwd
+const DEFAULT_ROOT = process.env.PAM_ROOT || process.cwd();
 const SKIP_DIRS = new Set([
   "node_modules",
   ".venv",
@@ -347,7 +348,7 @@ function main() {
 
   if (flags.has("--tree")) {
     // Human-readable tree
-    console.log(`CymaticAPPS root: ${result.root}`);
+    console.log(`Monorepo root: ${result.root}`);
     console.log(`Scanned at: ${result.scannedAt}`);
     console.log(
       `Projects: ${result.totalProjects} (with README: ${result.projectsWithReadme}, with MAPS: ${result.projectsWithMaps})\n`,

@@ -2,7 +2,7 @@
 
 # 📖 ReadMyAss — {{PROJECT_NAME}}
 
-> Human-readable explanation of `{{PROJECT_NAME}}` and its place in CymaticAPPS.
+> Human-readable explanation of `{{PROJECT_NAME}}` and its place in {{MONOREPO_NAME}}.
 > For the visual map see [`PAM_Slave.md`](./PAM_Slave.md).
 > For global significance see [`ASS_SLAVE.md`](./ASS_SLAVE.md).
 > For project-internal significance see [`PASS.md`](./PASS.md).
@@ -12,7 +12,7 @@
 ## *You Are Here*
 
 ```
-🗺️  CymaticAPPS  ─── (Master Map: ../../.pi/MAPS/ReadMyAss.md)
+🗺️  {{MONOREPO_NAME}}  ─── (Master Map: ../../.pi/MAPS/ReadMyAss.md)
     ├── ...
     ├── {{PROJECT_NAME}}  ◀── *YOU ARE HERE*
     └── ...
@@ -22,7 +22,7 @@
 
 {{PROJECT_OVERVIEW}}
 
-## How {{PROJECT_NAME}} relates to the rest of CymaticAPPS
+## How {{PROJECT_NAME}} relates to the rest of {{MONOREPO_NAME}}
 
 ```mermaid
 {{MERMAID_DIAGRAM}}

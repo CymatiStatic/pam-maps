@@ -4,7 +4,7 @@
 
 > **The most important file in the PAM hierarchy.**
 >
-> This document explains how each repo in CymaticAPPS contributes to the
+> This document explains how each repo in {{MONOREPO_NAME}} contributes to the
 > overall system structure, operations, pipeline, and workflow — and how
 > changes to it would ripple through the rest of the system.
 >
@@ -22,7 +22,7 @@ For each project, you'll find:
 
 - **Role** — one-line description of what this project IS in the global system.
 - **Contributes** — what this project produces, exposes, or does for others.
-- **Depends on** — what other CymaticAPPS projects (or external services) it needs.
+- **Depends on** — what other {{MONOREPO_NAME}} projects (or external services) it needs.
 - **Depended on by** — what would break if this disappeared.
 - **Ripple risk** — high / medium / low — how much of the system is affected by changes here.
 - **Hand-off contracts** — ports, env vars, file conventions, MCP servers, hooks that other systems are coupled to.
@@ -46,6 +46,6 @@ For each project, you'll find:
 (This is the same content as [`PAM_Master.md`](./PAM_Master.md), included here for convenience.)
 
 ```text
-CymaticAPPS/
+{{MONOREPO_NAME}}/
 {{TREE_BODY}}
 ```
