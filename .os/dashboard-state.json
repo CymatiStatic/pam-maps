@@ -1,0 +1,80 @@
+{
+  "active": false,
+  "project": "C:\\Users\\Ben\\Dev\\CymaticAPPS\\pam-maps",
+  "request": "",
+  "scope": "",
+  "phases": [
+    {
+      "id": "research",
+      "icon": "📚",
+      "label": "Research",
+      "status": "pending"
+    },
+    {
+      "id": "plan",
+      "icon": "📐",
+      "label": "Plan",
+      "status": "pending"
+    },
+    {
+      "id": "debate",
+      "icon": "⚖️",
+      "label": "Debate",
+      "status": "pending"
+    },
+    {
+      "id": "build",
+      "icon": "🔨",
+      "label": "Build",
+      "status": "pending"
+    },
+    {
+      "id": "lint",
+      "icon": "🧹",
+      "label": "Lint",
+      "status": "pending"
+    },
+    {
+      "id": "test",
+      "icon": "🧪",
+      "label": "Test",
+      "status": "pending"
+    },
+    {
+      "id": "review",
+      "icon": "🔍",
+      "label": "Review",
+      "status": "pending"
+    },
+    {
+      "id": "reflect",
+      "icon": "🪞",
+      "label": "Reflect",
+      "status": "pending"
+    }
+  ],
+  "currentPhase": null,
+  "startTime": null,
+  "features": {
+    "built": 0,
+    "mvp": 0,
+    "future": 0,
+    "undecided": 0
+  },
+  "activeAgent": null,
+  "agentStack": [],
+  "agentHistory": [],
+  "sprints": [],
+  "gates": [],
+  "orchestratorActive": false,
+  "loopIterations": {},
+  "maxLoopIterations": 3,
+  "executionMode": "passive",
+  "topology": null,
+  "dashboard": {
+    "port": 3778,
+    "url": "http://127.0.0.1:3778",
+    "mode": "local"
+  },
+  "updatedAt": 1779479297623
+}

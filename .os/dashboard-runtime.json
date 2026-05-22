@@ -1,0 +1,11 @@
+{
+  "kind": "pi-os-dashboard",
+  "version": 2,
+  "pid": 12904,
+  "port": 3778,
+  "project": "C:\\Users\\Ben\\Dev\\CymaticAPPS\\pam-maps",
+  "url": "http://127.0.0.1:3778",
+  "mode": "local",
+  "reused": false,
+  "updatedAt": 1779479297623
+}

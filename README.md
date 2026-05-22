@@ -66,7 +66,9 @@ cp agents/PAM.md ~/.pi/agent/agents/
 cp -r skills/ ~/.claude/skills/    # or ~/.codex/skills/
 ```
 
-Then use `/pam status`, `/pam sync`, or `/pam evaluate <url>` inside any session.
+Then use `/pam status`, `/pam sync`, `/pam evaluate <url>`, etc. inside any session.
+
+Or just talk to PAM in natural language — no slash commands required.
 
 ## 🚀 Usage
 
@@ -90,9 +92,16 @@ pam-log --project my-api --type contract-change \
 | Command | What it does |
 |---------|-------------|
 | `/pam status` | Which projects have maps, what's stale, pending changes |
-| `/pam sync` | Regenerate all maps (cached - only re-syncs what changed) |
+| `/pam sync` | Regenerate all maps (cached — only re-syncs what changed) |
 | `/pam sync <project>` | Refresh just one project's ASS/PASS/ReadMyAss files |
 | `/pam evaluate <url>` | Verdict on a third-party repo against your 🍑 ASS_MASTER |
+
+PAM also responds to natural language — no slash commands needed:
+
+- *"Hey PAM, can you analyze this repo?"*
+- *"Hey PAM, can you sync this new repo that I'm working on?"*
+- *"PAM, would this npm package benefit my system?"*
+- *"Hey PAM, what breaks if I delete this project?"*
 
 ## 🔍 What PAM Generates
 
