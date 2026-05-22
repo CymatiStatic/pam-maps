@@ -1,7 +1,7 @@
 {
   "name": "pam-maps",
-  "version": "0.2.2",
-  "description": "Finds which parts of your monorepo are ASS (Architecturally System-Significant) and which are just PASS. Generates ASS_MASTER.md, ReadMyAss.md, and dependency maps. Project Architectural Maps — living, multi-layer cartography for monorepos that maintains visual maps, significance ratings, dependency graphs, and third-party repo evaluation.",
+  "version": "0.2.3",
+  "description": "🍑 Finds which parts of your monorepo are ASS (Architecturally System-Significant) and which are just PASS. Generates ASS_MASTER.md, ReadMyAss.md, and dependency maps. Project Architectural Maps — living, multi-layer cartography for monorepos that maintains visual maps, significance ratings, dependency graphs, and third-party repo evaluation.",
   "keywords": [
     "monorepo",
     "architecture",
