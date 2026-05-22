@@ -1,192 +1,175 @@
 # 🗺️ PAM — Project Architectural Maps
 
-> Living, multi-layer cartography for monorepos and multi-repo systems. PAM analyzes your repos and their subdirectories, identifies architecturally significant imports and connections, and maintains a map that stays current as your system evolves.
+> PAM is an anagram of MAP. That is intentional. The acronyms are load-bearing. So is your architecture — PAM finds out which parts.
+
+PAM scans your monorepo (or multi-repo system), reads every README and project structure, and tells you which parts are **ASS** and which are just **PASS**.
+
+## The Naming Convention
+
+These are not jokes. They are the literal filenames.
+
+| Term | Stands for | What it means |
+|------|-----------|---------------|
+| **PAM** | Project Architectural Maps | The tool itself |
+| **MAP** | *(anagram of PAM)* | The visual file-tree artifact PAM generates |
+| **ASS** | Architectural System Significance | This project is load-bearing — remove it and other systems break |
+| **PASS** | Project-Architectural Semi-Significance | Matters internally, but the rest of the system doesn't care if it disappears |
+| **ReadMyAss** | *(literal filename)* | Human-readable map with a *"You Are Here"* marker. Like a README, but for your architecture |
+
+Your monorepo gets rated. Every project is either 🔴 ASS (system-critical) or 🟡 PASS (self-contained). The ones that are both? That's where you pay attention.
 
 ## The Problem
 
-Large codebases rot silently. README files go stale. New contributors can't find the entry point. AI agents hallucinate project relationships because nothing documents the actual architecture. One project gets renamed and three downstream systems break because nobody mapped the dependency.
+Nobody documents architecture. README files rot. New developers guess at relationships. AI agents hallucinate dependencies. One project gets renamed and three downstream systems break because nobody mapped the dependency graph.
 
-## What PAM Does
+PAM fixes this by generating a multi-layer map that actually stays current:
 
-PAM scans your monorepo (or system of repos), reads every README and project structure, and synthesizes a **multi-layer map** of your entire system:
+- **`ASS_MASTER.md`** — The most important file. Which projects are architecturally significant, what depends on what, and what breaks if something disappears
+- **`ReadMyAss.md`** — Human-readable narrative with Mermaid diagrams and a *"You Are Here"* breadcrumb
+- **`PAM_Master.md`** — Quick visual tree with ⭐ markers on the load-bearing projects
+- **`PASS.md`** — Per-project: what matters *inside* this project even if nobody else cares
 
-- **What each project does** and how it contributes to the whole
-- **How projects connect** — dependencies, shared contracts, ports, file paths
-- **What breaks if something disappears** — ripple analysis for every system
-- **Significance ratings** — which projects are load-bearing (🔴 ASS) vs self-contained (🟡 PASS)
+## Third-Party Repo Evaluation
 
-### Third-Party Repo Evaluation
-
-Drop in a link to any public repo, npm package, tool, or application, and ask PAM:
+Drop in a link to any public repo, npm package, or tool and ask:
 
 > *"Would this benefit my system?"*
 
-PAM reads the repo's README and metadata, compares it against its knowledge of your existing architecture, and responds with a structured verdict:
+PAM reads the repo, compares it against `ASS_MASTER.md`, and gives you a verdict:
 
-| Verdict | Meaning |
-|---------|---------|
-| ✅ **ADDS VALUE** | Fills a gap, no overlap with existing systems |
-| 🟡 **MAYBE** | Some value, but overlap or integration cost to consider |
+| Verdict | Translation |
+|---------|------------|
+| ✅ **ADDS VALUE** | Real gap-fill. PAM names exactly where it slots in |
+| 🟡 **MAYBE** | Some overlap. PAM names the conditional |
 | 🔴 **REDUNDANT** | You already have something that does this |
-| ⚠️ **COULD CONFLICT** | Risk of breaking existing contracts or conventions |
-| ⛔ **NOT USEFUL** | Doesn't fit your architecture |
+| ⚠️ **COULD CONFLICT** | Port collision, hook overlap, or it'll step on something running |
+| ⛔ **NOT USEFUL** | Wrong domain, wrong runtime, abandoned, doesn't fit |
 
-The verdict includes *why* — which existing projects overlap, what the integration points would be, and what would need to change.
+Every verdict comes with rationale, touched systems, and a recommended action — not just a label.
 
-## 📦 Installation
+## 📦 Install
 
 ```bash
 npm install -g pam-maps
 ```
 
-Or clone and use directly:
-
-```bash
-git clone https://github.com/CymatiStatic/pam-maps.git
-cd pam-maps
-```
-
 ### Use with AI Coding Agents
 
-PAM works with **any CLI-based AI agent** — Pi, Claude Code, Codex, Cursor, Aider, or anything else. Copy the skill and agent docs into your agent's config:
+PAM works with **any CLI agent** — Pi, Claude Code, Codex, Cursor, Aider, or standalone. Copy the skill files into your agent config:
 
 ```bash
-# Example: Pi
+# Pi
 cp -r skills/ ~/.pi/agent/skills/
 cp agents/PAM.md ~/.pi/agent/agents/
 
-# Example: Claude Code
-cp -r skills/ ~/.claude/skills/
-
-# Example: Codex
-cp -r skills/ ~/.codex/skills/
+# Claude Code / Codex / others
+cp -r skills/ ~/.claude/skills/    # or ~/.codex/skills/
 ```
 
-Then use `/pam status`, `/pam sync`, or `/pam evaluate <url>` from inside any session.
+Then use `/pam status`, `/pam sync`, or `/pam evaluate <url>` inside any session.
 
 ## 🚀 Usage
 
-### CLI Scripts (standalone, no agent required)
+### CLI (standalone)
 
 ```bash
-# Scan your monorepo and emit structured JSON
+# Scan your monorepo → structured JSON of every project
 pam-scan /path/to/your/monorepo
 
-# Or with environment variable
-PAM_ROOT=/path/to/monorepo pam-scan
-
-# Fetch a GitHub repo's README + metadata (no clone needed)
+# Evaluate a third-party repo without cloning it
 pam-fetch https://github.com/expressjs/express
 
-# Log a significant change for the next sync
+# Log a change for the next sync
 pam-log --project my-api --type contract-change \
         --summary "Changed default port from 3000 to 8080" \
         --ripple "frontend, reverse-proxy"
-
-# List pending changes across all projects
-pam-log --counts
-
-# Read pending changes for a project
-pam-log --read --project my-api
-
-# Drain (read + archive) pending changes
-pam-log --drain --project my-api
 ```
 
-### Agent Commands (inside any AI coding session)
+### Agent Commands
 
 | Command | What it does |
 |---------|-------------|
 | `/pam status` | Which projects have maps, what's stale, pending changes |
-| `/pam sync` | Refresh master + slave map files (only re-syncs what changed) |
-| `/pam sync --master-only` | Just the 3 monorepo-level files |
-| `/pam sync --new-only` | Fill in projects without maps |
-| `/pam sync <project>` | Refresh just one project |
-| `/pam evaluate <github-url>` | Verdict on whether a third-party repo adds value |
+| `/pam sync` | Regenerate all maps (cached — only re-syncs what changed) |
+| `/pam sync <project>` | Refresh just one project's ASS/PASS/ReadMyAss files |
+| `/pam evaluate <url>` | Verdict on a third-party repo against your ASS_MASTER |
 
-## 🔍 How It Works
+## 🔍 What PAM Generates
 
-### Map Hierarchy
-
-PAM generates two layers of documentation:
+### Master Layer (whole system)
 
 ```
-<monorepo>/.pi/MAPS/                    ← Master layer (whole system)
-├── PAM_Master.md       Quick visual map of the entire tree
-├── ReadMyAss.md        Human-readable narrative with Mermaid diagrams
-└── ASS_MASTER.md       Deep architectural significance breakdown
+<monorepo>/.pi/MAPS/
+├── ASS_MASTER.md       ← THE important file. Global significance breakdown.
+│                         "What contributes to the system, what depends on what,
+│                          what breaks if this disappears."
+├── ReadMyAss.md        ← Human-readable narrative. Mermaid diagrams.
+│                         "You Are Here" breadcrumb navigation.
+└── PAM_Master.md       ← Quick visual tree. ⭐ = ASS, 🟡 = PASS, ⚪ = neither.
+```
 
-<project>/.pi/MAPS/                     ← Slave layer (per-project)
-├── PAM_Slave.md        This project's visual map
-├── ASS_SLAVE.md        Significance rating + dependency list
-├── PASS.md             Classification rationale
-└── ReadMyAss.md        This project's narrative
+### Slave Layer (per-project)
+
+```
+<project>/.pi/MAPS/
+├── ASS_SLAVE.md        ← Only the parts that affect OTHER systems.
+│                         Hand-off points, shared contracts, ports, daemons.
+├── PASS.md             ← What matters INSIDE this project.
+│                         Hot paths, fragile glue, critical configs.
+├── ReadMyAss.md        ← This project's narrative + its place in the graph.
+└── PAM_Slave.md        ← Visual tree. ⭐ = files the program actually uses.
 ```
 
 ### Significance Ratings
 
 | Rating | Meaning | Example |
 |--------|---------|---------|
-| 🔴 **ASS** | Architecturally System-Significant — removal breaks other systems | Shared API gateway, auth service, message bus |
-| 🟡 **PASS** | Project-Architecturally Semi-Significant — self-contained, limited ripple | Internal CLI tool, standalone utility |
-
-### Pending Log Protocol
-
-Any developer or AI agent can report significant changes without triggering a full resync:
-
-```bash
-pam-log --project my-api --type contract-change \
-        --summary "REST endpoint /v2/users replaced /v1/users" \
-        --files "src/routes.ts,openapi.yaml" \
-        --ripple "frontend, mobile-app, docs"
-```
-
-PAM drains the log on the next `/pam sync` and folds changes into the maps.
-
-Change types: `new-project` · `rename-project` · `delete-project` · `contract-change` · `new-dependency` · `dependency-removed` · `role-change` · `other`
-
-### Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `scan-readmes.mjs` | Walk a monorepo root, find every README, emit structured JSON |
-| `fetch-repo-readme.mjs` | Fetch a GitHub repo's README + metadata via API (no clone needed) |
-| `log-pending.mjs` | Append/read/drain the per-project pending change log |
+| 🔴 **ASS** | Remove it and other systems break | Shared API gateway, auth service, message bus |
+| 🟡 **PASS** | Self-contained — the system doesn't notice if it's gone | Internal CLI tool, standalone utility |
+| 🔴🟡 **Both** | Load-bearing *and* internally complex — pay attention here | Core service with fragile internal architecture |
 
 ## 📁 Repo Structure
 
 ```
 pam-maps/
-├── agents/PAM.md              ← PAM's identity and vocabulary (for AI agents)
-├── skills/pam/SKILL.md        ← Workflow definition (for AI agent sessions)
+├── agents/PAM.md              ← PAM's identity, vocabulary, and rules
+├── skills/pam/SKILL.md        ← The /pam workflow (for AI agent sessions)
 ├── scripts/
-│   ├── scan-readmes.mjs       ← Monorepo walker (standalone CLI)
-│   ├── fetch-repo-readme.mjs  ← GitHub repo fetcher (standalone CLI)
-│   └── log-pending.mjs        ← Pending change logger (standalone CLI)
-├── templates/                 ← Output file templates (Markdown)
-├── prompts/pam.md             ← Slash command entry point (optional)
+│   ├── scan-readmes.mjs       ← Walk a monorepo, emit structured JSON
+│   ├── fetch-repo-readme.mjs  ← Fetch a GitHub repo's README via API (no clone)
+│   └── log-pending.mjs        ← Append/read/drain the pending change log
+├── templates/
+│   ├── ASS_MASTER.template.md ← Template for the global significance file
+│   ├── ASS_SLAVE.template.md  ← Template for per-project significance
+│   ├── PASS.template.md       ← Template for internal significance
+│   ├── ReadMyAss_*.template.md ← Templates for human-readable narratives
+│   ├── PAM_*.template.md      ← Templates for visual maps
+│   └── pre-commit-pam-check.sh ← Git hook: warns on ASS-significant changes
+├── prompts/pam.md             ← Slash command entry point
 └── package.json
 ```
 
 ## ⚙️ Configuration
 
-Set `PAM_ROOT` environment variable to your monorepo root, or pass it as a CLI argument:
-
 ```bash
+# Set your monorepo root (or PAM defaults to cwd)
 export PAM_ROOT=/path/to/your/monorepo
-pam-scan                    # uses PAM_ROOT
-pam-scan /other/path        # overrides PAM_ROOT
+pam-scan
+
+# Or pass it directly
+pam-scan /path/to/monorepo
 ```
 
-PAM works with any monorepo structure — it reads READMEs to understand project roles, not framework-specific config files. No Nx, Turborepo, or Lerna required.
+PAM reads READMEs to understand project roles. No Nx, Turborepo, or Lerna config required — any directory with a README is a project.
 
 ## 🤝 Contributing
 
-PRs welcome! Areas that could use help:
-- Additional output templates for different monorepo styles
-- Language-specific significance heuristics
-- Integration guides for more AI agents
+PRs welcome. If your monorepo has a structure PAM doesn't handle well, open an issue.
 
 ## 📄 License
 
 [MIT](LICENSE) — built by [@CymatiStatic](https://github.com/CymatiStatic)
+
+---
+
+<sub>Yes, you will have files named `ASS_MASTER.md` and `ReadMyAss.md` in your repo. Your coworkers will ask questions. That's a feature.</sub>

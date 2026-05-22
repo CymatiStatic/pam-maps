@@ -1,8 +1,16 @@
 {
   "name": "pam-maps",
   "version": "0.2.0",
-  "description": "Project Architectural Maps — living, multi-layer cartography for monorepos. Maintains visual maps, significance ratings, dependency graphs, and evaluates whether third-party repos add value to your system.",
-  "keywords": ["monorepo", "architecture", "cartography", "maps", "dependencies", "documentation", "devtools"],
+  "description": "Project Architectural Maps — finds out which parts of your monorepo are ASS (Architecturally System-Significant) and which are just PASS. Generates ASS_MASTER.md, ReadMyAss.md, and dependency maps. Evaluates third-party repos against your architecture.",
+  "keywords": [
+    "monorepo",
+    "architecture",
+    "cartography",
+    "maps",
+    "dependencies",
+    "documentation",
+    "devtools"
+  ],
   "bin": {
     "pam-scan": "./scripts/scan-readmes.mjs",
     "pam-log": "./scripts/log-pending.mjs",
