@@ -1,0 +1,17 @@
+{
+  "name": "pi-pam",
+  "version": "0.1.0",
+  "description": "Project Architectural Maps — living, multi-layer cartography for monorepos. A Pi skill that maintains visual maps, significance ratings, dependency graphs, and third-party repo evaluation.",
+  "main": "skills/pam/SKILL.md",
+  "keywords": ["pi-package", "pi-skill", "monorepo", "architecture", "cartography", "maps"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CymatiStatic/pi-pam.git"
+  },
+  "author": "CymatiStatic",
+  "license": "MIT",
+  "pi": {
+    "skills": ["./skills/pam/SKILL.md"],
+    "prompts": ["./prompts/pam.md", "./prompts/cymatic-map.md"]
+  }
+}
